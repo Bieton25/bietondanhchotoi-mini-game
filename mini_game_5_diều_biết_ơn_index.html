@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Game – 5 Điều Biết Ơn</title>
+  <meta name="description" content="Nhấn ★ 5 lần để mở 5 điều biết ơn – Chạm Nhẹ Tâm Hồn" />
+  <!-- Open Graph cho chia sẻ Facebook (sau khi deploy, chỉnh og:url, og:image nếu có) -->
+  <meta property="og:title" content="Mini Game – 5 Điều Biết Ơn" />
+  <meta property="og:description" content="Nhấn ★ 5 lần để mở 5 điều biết ơn – Chạm Nhẹ Tâm Hồn" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://example.com/" />
+  <meta property="og:image" content="https://via.placeholder.com/1200x630.png?text=5+Dieu+Biet+On" />
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --card: #ffffff;
+      --accent: #e6b800; /* vàng ấm */
+      --text: #1f2937; /* slate-800 */
+      --muted: #6b7280; /* slate-500 */
+      --success: #059669; /* emerald-600 */
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%; margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    .wrap {
+      min-height: 100%; display: grid; place-items: center; padding: 24px;
+      background: radial-gradient(1000px 600px at 50% -10%, #fff7e6, transparent 70%),
+                  radial-gradient(800px 500px at 100% 0%, #f3ffe9, transparent 60%);
+    }
+    .card {
+      width: 100%; max-width: 720px; background: var(--card); border-radius: 24px; padding: 28px;
+      box-shadow: 0 10px 30px rgba(31,41,55,.08);
+      border: 1px solid rgba(0,0,0,.04);
+    }
+    .brand { font-weight: 600; font-size: 14px; letter-spacing: .3px; color: var(--muted); }
+    h1 { margin: 8px 0 4px; font-size: 28px; }
+    .subtitle { color: var(--muted); margin-bottom: 16px; }
+
+    .center { display: grid; place-items: center; text-align: center; gap: 14px; margin: 8px 0 20px; }
+
+    .star-btn {
+      width: 120px; height: 120px; border-radius: 9999px; border: 0; background: #fff8e1;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.05), 0 8px 14px rgba(230,184,0,.18);
+      color: #b58900; font-size: 56px; line-height: 1; cursor: pointer;
+      transition: transform .07s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .star-btn:active { transform: scale(.96) rotate(-2deg); }
+    .star-btn[disabled] { opacity: .6; cursor: not-allowed; }
+
+    .progress { font-weight: 600; color: var(--muted); }
+
+    .divider { height: 1px; background: rgba(0,0,0,.08); margin: 12px 0 18px; }
+
+    .gratitude {
+      display: none; /* ẩn tới khi mở */
+      background: linear-gradient(to bottom, rgba(255,255,255,.8), rgba(255,255,255,.95));
+      border: 1px solid rgba(0,0,0,.06); border-radius: 16px; padding: 18px; 
+    }
+    .gratitude.active { display: block; animation: fadeIn .4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px);} to { opacity: 1; transform: none;} }
+
+    ol { margin: 0; padding-left: 20px; }
+    li { margin: 10px 0; line-height: 1.5; }
+
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+    .btn { border: 1px solid rgba(0,0,0,.1); background: white; color: var(--text);
+      padding: 10px 14px; border-radius: 12px; cursor: pointer; font-weight: 600;
+      transition: transform .06s ease, background .2s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: #fff3c4; border-color: #ffe08a; }
+    .note { font-size: 13px; color: var(--muted); }
+
+    .footer { margin-top: 18px; font-size: 13px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .brandmark { font-weight: 700; letter-spacing: .2px; }
+
+    /* Khung trắng mờ như chị yêu cầu */
+    .frosted {
+      background: rgba(255,255,255,.8);
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 20px; padding: 18px; backdrop-filter: blur(4px);
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 420px) {
+      .star-btn { width: 100px; height: 100px; font-size: 48px; }
+      h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div class="brand">Chạm Nhẹ Tâm Hồn 🌿</div>
+      <h1>Mini Game – 5 Điều Biết Ơn</h1>
+      <p class="subtitle">Nhấn <strong>★</strong> 5 lần để mở quà biết ơn. Có thể nhấn phím <strong>*</strong> trên bàn phím nữa nhé.</p>
+
+      <div class="center">
+        <button id="starBtn" aria-label="Nhấn để đếm sao" class="star-btn">★</button>
+        <div id="progress" class="progress">0/5</div>
+        <div class="note">Mẹo: chia sẻ liên kết này dưới bài đăng Facebook của chị để người xem bấm chơi trực tiếp.</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div id="result" class="gratitude frosted" aria-live="polite">
+        <div style="font-weight:700; margin-bottom:8px;">✨ 5 điều biết ơn hôm nay ✨</div>
+        <ol id="list"></ol>
+        <div class="actions">
+          <button class="btn primary" id="replayBtn">Chơi lại</button>
+          <button class="btn" id="copyBtn">Sao chép</button>
+          <button class="btn" id="shareBtn">Chia sẻ Facebook</button>
+        </div>
+        <div id="copied" class="note" style="display:none;">Đã sao chép vào bộ nhớ tạm!</div>
+      </div>
+
+      <div class="footer">
+        <span class="brandmark">Chạm Nhẹ Tâm Hồn 🌿</span>
+        <span class="note">Thiết kế tối giản – dễ đọc – phù hợp mobile.</span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ===== DỮ LIỆU NỘI DUNG – có thể chỉnh sửa cho hợp phong cách chị =====
+    const DATA = {
+      work: [
+        "Tôi biết ơn công việc hôm nay đã cho tôi cơ hội phục vụ và học hỏi; mỗi yêu cầu nhỏ của người khác là lời nhắc tôi đang có giá trị và còn có thể tốt hơn ngày mai.",
+        "Tôi biết ơn đồng nghiệp tin cậy; mỗi lần phối hợp trơn tru nhắc tôi rằng thành công luôn là công sức của một tập thể, và tôi may mắn được là một phần trong đó.",
+        "Tôi biết ơn những lỗi nhỏ tôi từng mắc; nhờ chúng, tôi học cách kiểm tra kỹ hơn, hỏi thêm một câu, và tôn trọng tiêu chuẩn nghề nghiệp mỗi ngày.",
+        "Tôi biết ơn người dùng đã phản hồi tương tác ; họ chỉ cho tôi thấy nhu cầu thật, để tôi phục vụ đúng hơn và làm công việc trở nên ý nghĩa.",
+        "Tôi biết ơn chiếc bàn làm việc giản dị; nơi ươm mầm ý tưởng, tổ chức lại suy nghĩ, và cho tôi cảm giác được bắt đầu từ sự gọn gàng."
+      ],
+      family: [
+        "Tôi biết ơn gia đình, nơi tôi được yêu mà không cần chứng minh; một bữa cơm giản dị, một câu hỏi thăm đã đủ nâng đỡ tôi đi qua cả ngày dài.",
+        "Tôi biết ơn cha mẹ vì đã dạy tôi sống tử tế; một cái nhìn bao dung của họ đủ xoa dịu bao bão giông trong lòng.",
+        "Tôi biết ơn người thân nhỏ bé trong nhà; nụ cười của các em là chiếc đồng hồ báo thức của hy vọng mỗi sáng.",
+        "Tôi biết ơn người bạn đời và anh chị em đã chịu lắng nghe; sự hiện diện của họ làm tôi bớt cô đơn trên hành trình trưởng thành.",
+        "Tôi biết ơn mái nhà; tiếng ấm đun sôi, mùi cơm chín nhắc tôi quay về với điều căn bản nhất: yêu và được yêu."
+      ],
+      self: [
+        "Tôi biết ơn chính mình vì đã chọn tử tế và kiên nhẫn; dù mệt mỏi, tôi vẫn không bỏ cuộc – đó là lời cam kết âm thầm với ước mơ của tôi.",
+        "Tôi biết ơn đôi mắt và đôi tay vẫn còn khoẻ; tôi có thể đọc, viết, ôm người mình thương và làm việc để tạo ra giá trị mỗi ngày.",
+        "Tôi biết ơn những phút tôi biết dừng lại; không chạy theo so sánh, tôi trở về với nhịp thở và nhớ mình là ai.",
+        "Tôi biết ơn sự tò mò của mình; nó dẫn tôi học điều mới, thử cách khác, và không kẹt trong lỗi cũ.",
+        "Tôi biết ơn bản lĩnh nói ‘không’ khi cần; nhờ vậy tôi bảo vệ thời gian, năng lượng và sự bình an bên trong."
+      ],
+      relations: [
+        "Tôi biết ơn những người bạn và đồng nghiệp đã lắng nghe thật sự; sự tin cậy của họ là chiếc cầu nối tôi với thế giới rộng lớn, giúp tôi mạnh mẽ và chân thành hơn.",
+        "Tôi biết ơn những người thầy; chỉ một lời khuyên đúng lúc có thể thay đổi cả hướng đi của đời tôi.",
+        "Tôi biết ơn những người từng làm tôi tổn thương; họ vô tình dạy tôi ranh giới, tự trọng và cách yêu thương lành mạnh hơn.",
+        "Tôi biết ơn khách hàng quay lại; sự tin tưởng lặp lại của họ là phần thưởng cho sự tử tế bền bỉ.",
+        "Tôi biết ơn những cuộc trò chuyện ngắn bên lề; đôi khi một câu ‘bạn ổn không?’ mở ra cả một ngày sáng rỡ."
+      ],
+      life: [
+        "Tôi biết ơn cuộc sống vì cả vui lẫn buồn; chính những va chạm nhỏ dạy tôi khiêm nhường, biết dừng lại thở sâu và nhận ra hiện tại luôn đủ đầy.",
+        "Tôi biết ơn buổi sáng trong veo sau cơn mưa; trời đất nhắc tôi mọi thứ đều có thể bắt đầu lại.",
+        "Tôi biết ơn những cuốn sách; mỗi trang mở thêm một cánh cửa, đưa tôi ra khỏi góc nhìn chật hẹp.",
+        "Tôi biết ơn sự im lặng của đêm; trong bóng tối, tôi nghe được tiếng nói bên trong và viết ra điều cần viết.",
+        "Tôi biết ơn những cơ hội nhỏ; khi làm tốt những việc nhỏ, cuộc đời tự khắc mở rộng những cánh cửa lớn."
+      ]
+    };
+
+    // ===== LOGIC TRÒ CHƠI =====
+    const starBtn = document.getElementById('starBtn');
+    const progressEl = document.getElementById('progress');
+    const result = document.getElementById('result');
+    const list = document.getElementById('list');
+    const replayBtn = document.getElementById('replayBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const copied = document.getElementById('copied');
+    const shareBtn = document.getElementById('shareBtn');
+
+    let count = 0;
+    let opened = false;
+
+    function updateProgress() {
+      progressEl.textContent = `${count}/5`;
+    }
+
+    function randomPick(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateFive() {
+      // Lấy đúng 5 mảng chủ đề để bảo đảm đủ: công việc, gia đình, bản thân, quan hệ, cuộc sống
+      const picks = [
+        randomPick(DATA.work),
+        randomPick(DATA.family),
+        randomPick(DATA.self),
+        randomPick(DATA.relations),
+        randomPick(DATA.life)
+      ];
+      list.innerHTML = picks.map(x => `<li>${x}</li>`).join('');
+      result.classList.add('active');
+    }
+
+    function resetGame() {
+      count = 0; opened = false; updateProgress();
+      starBtn.disabled = false; result.classList.remove('active');
+      list.innerHTML = '';
+      copied.style.display = 'none';
+    }
+
+    function handlePress() {
+      if (opened) return;
+      count = Math.min(5, count + 1);
+      updateProgress();
+      if (count >= 5) {
+        opened = true; starBtn.disabled = true; generateFive();
+      }
+    }
+
+    // Sự kiện
+    starBtn.addEventListener('click', handlePress);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === '*') handlePress();
+    });
+
+    replayBtn.addEventListener('click', resetGame);
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        const text = Array.from(list.querySelectorAll('li')).map((li, i) => `${i+1}. ${li.textContent}`).join('\n');
+        await navigator.clipboard.writeText(`✨ 5 điều biết ơn hôm nay ✨\n${text}\n— Chạm Nhẹ Tâm Hồn 🌿`);
+        copied.style.display = 'block';
+        setTimeout(() => copied.style.display = 'none', 2000);
+      } catch (err) {
+        alert('Trình duyệt không cho phép sao chép tự động. Hãy chọn và copy thủ công nhé!');
+      }
+    });
+
+    shareBtn.addEventListener('click', () => {
+      const url = location.href; // khi đã deploy, sẽ là URL công khai
+      const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+      window.open(shareUrl, '_blank', 'noopener,noreferrer');
+    });
+
+    // Khởi tạo
+    updateProgress();
+  </script>
+</body>
+</html>
